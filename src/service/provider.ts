@@ -24,9 +24,7 @@ export const createProvider = async (providerData) => {
 export const updateProvider = async (providerId, providerData) => {
     const token = localStorage.getItem('accessToken');
     console.log(providerData);
-    const res = await api.patch(`/api/provider/${providerId}`, {
-        apiKey: "aaaaaa",
-    }, {
+    const res = await api.patch(`/api/provider/${providerId}`, providerData, {
         headers: {
             Authorization: `Bearer ${token}`
         },
