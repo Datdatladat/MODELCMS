@@ -2,16 +2,20 @@
 
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import axios from 'axios';
+import { createProvider } from '@/service/provider';
 
 interface AddProviderButtonProps {
-  onAdd: (provider: { code: string; name: string; status: 'active' | 'inactive' }) => void;
+  onAdd: (provider: { 
+    id: string;
+    name: string; 
+    apiKey: string; 
+    baseUrl: string;  
+  }) => void;
 }
 
 export default function AddProviderButton({ onAdd }: AddProviderButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    code: '',
     name: '',
     apiKey: '',
     baseUrl: '',
@@ -25,33 +29,24 @@ export default function AddProviderButton({ onAdd }: AddProviderButtonProps) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.code || !formData.name || !formData.apiKey || !formData.baseUrl) {
+    if (!formData.name || !formData.apiKey || !formData.baseUrl) {
       alert('Vui lòng nhập đầy đủ thông tin');
       return;
     }
 
     try {
-      const data = new URLSearchParams();
-      data.append('code', formData.code);
-      data.append('name', formData.name);
-      data.append('apiKey', formData.apiKey);
-      data.append('baseUrl', formData.baseUrl);
-
-      const res = await axios.post('http://localhost:8080/provider', data.toString(), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      });
+      const res = await createProvider(formData);
 
       console.log('Tạo provider thành công:', res.data);
 
       onAdd({
-        code: formData.code,
-        name: formData.name,
-        status: 'active', 
+        id: res.data.id, // Assuming the response contains the new provider's ID
+        name: res.data.name,
+        apiKey: res.data.apiKey,
+        baseUrl: res.data.baseUrl, 
       });
 
-      setFormData({ code: '', name: '', apiKey: '', baseUrl: '' });
+      setFormData({ name: '', apiKey: '', baseUrl: '' });
       closeModal();
     } catch (error) {
       console.error('Lỗi khi thêm provider:', error);
@@ -70,7 +65,7 @@ export default function AddProviderButton({ onAdd }: AddProviderButtonProps) {
 
       {isModalOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-white/60 bg-opacity-20 flex items-center justify-center z-50"
           onClick={closeModal}
         >
           <div
@@ -88,12 +83,10 @@ export default function AddProviderButton({ onAdd }: AddProviderButtonProps) {
             <h2 className="text-2xl font-semibold mb-6 text-black">Thêm Provider Mới</h2>
 
             <div className="flex flex-col space-y-6">
-              {['code', 'name', 'apiKey', 'baseUrl'].map((field) => (
+              {['name', 'apiKey', 'baseUrl'].map((field) => (
                 <div key={field}>
                   <label className="block text-black font-medium mb-2" htmlFor={field}>
-                    {field === 'code'
-                      ? 'Mã Provider'
-                      : field === 'name'
+                    {field === 'name'
                       ? 'Tên Provider'
                       : field === 'apiKey'
                       ? 'API Key'

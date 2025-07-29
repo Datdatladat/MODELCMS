@@ -3,47 +3,42 @@
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface Provider {
-  code: string;
-  name: string;
-  status: 'active' | 'inactive';
+  id: string,
+  name: string,
+  apiKey: string,
+  baseUrl: string
 }
 
 interface ProviderTableProps {
   providers: Provider[];
+  onEditClick: (provider: Provider) => void;
 }
 
-export default function ProviderTable({ providers }: ProviderTableProps) {
+export default function ProviderTable({ providers, onEditClick }: ProviderTableProps) {
   return (
     <div className="bg-white rounded shadow p-6">
       <h2 className="text-xl font-semibold mb-4 text-black">Danh sách Providers</h2>
       <table className="min-w-full w-full table-fixed border border-gray-300 rounded">
         <thead>
           <tr className="bg-gray-100 text-left">
-            <th className="px-6 py-3 text-black font-semibold border-b">Code</th>
-            <th className="px-6 py-3 text-black font-semibold border-b">Tên</th>
-            <th className="px-6 py-3 text-black font-semibold border-b">Trạng thái</th>
+            <th className="px-6 py-3 text-black font-semibold border-b">Name</th>
+            <th className="px-6 py-3 text-black font-semibold border-b">Api Key</th>
+            <th className="px-6 py-3 text-black font-semibold border-b">Base Url</th>
             <th className="px-6 py-3 text-black font-semibold border-b">Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {providers.length > 0 ? (
             providers.map((provider, index) => (
-              <tr key={index} className="border-t">
-                <td className="px-6 py-3 text-black">{provider.code}</td>
+              <tr key={provider.id} className="border-t">
                 <td className="px-6 py-3 text-black">{provider.name}</td>
-                <td className="px-6 py-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      provider.status === 'active'
-                        ? 'bg-black text-white'
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    {provider.status === 'active' ? 'Kích hoạt' : 'Tắt'}
-                  </span>
-                </td>
+                <td className="px-6 py-3 text-black">{provider.apiKey}</td>
+                <td className="px-6 py-3 text-black">{provider.baseUrl}</td>
                 <td className="px-6 py-3 flex gap-2">
-                  <button className="hover:bg-gray-200 p-2 rounded">
+                  <button
+                    onClick={() => onEditClick(provider)}
+                    className="hover:bg-gray-200 p-2 rounded"
+                  >
                     <Pencil className="w-5 h-5 text-black" />
                   </button>
                   <button className="hover:bg-gray-200 p-2 rounded">

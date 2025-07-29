@@ -1,6 +1,7 @@
 export interface LoginPayload {
   username: string;
   password: string;
+  authType: string; // Thêm authType nếu cần thiết
 }
 
 export interface LoginResponse {
@@ -9,17 +10,17 @@ export interface LoginResponse {
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const res = await fetch('http://192.168.1.5:8080/auth/login', {
+  const res = await fetch('http://localhost:8080/api/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(payload)
   });
 
   if (!res.ok) {
     throw new Error('Login failed');
   }
 
-  return res.json();
+  return await res.json();
 }

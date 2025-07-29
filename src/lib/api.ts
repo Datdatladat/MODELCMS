@@ -3,19 +3,14 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8080';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// API
 
-export const login = async (email: string, password: string) => {
-  const res = await api.post('/auth/login', { email, password });
-  return res.data;
-};
 
 export const fetchProvidersWithQuery = async ({
   page,
