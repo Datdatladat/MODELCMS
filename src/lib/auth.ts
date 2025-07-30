@@ -21,3 +21,9 @@ export function getUserRole(token: string): string | null {
   console.log('Decoded JWT payload:', payload);
   return payload?.scope || null; // hoặc payload?.role tùy BE
 }
+
+export function getUserId(token: string): string | null {
+  const payload = parseJwt(token);
+  console.log('Decoded JWT payload:', payload);
+  return payload?.userId || null; // hoặc payload?.userId tùy BE
+}

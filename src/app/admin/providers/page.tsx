@@ -7,13 +7,7 @@ import ProviderTable from './ProviderTable';
 import { getProviders } from '@/service/provider';
 import { useEffect } from 'react';
 import EditProviderModal from './UpdateProviderModal';
-
-interface Provider {
-  id: string;
-  name: string;
-  apiKey: string;
-  baseUrl: string;
-}
+import { Provider } from '@/types/providers';
 
 export default function Page() {
   const [providers, setProviders] = useState([]);
@@ -43,14 +37,18 @@ export default function Page() {
     );
   };
 
-  return (
-    <div className="p-6 space-y-6">
-      <Header />
-      <AddProviderButton onAdd={handleAddProvider} />
+   return (
+    <div className="max-w-6xl mx-auto py-8">
+      <div className="flex items-center justify-between mb-8">
+        <Header />
+        <AddProviderButton onAdd={handleAddProvider} />
+      </div>
+      
       <ProviderTable
         providers={providers}
         onEditClick={(provider) => setEditingProvider(provider)}
       />
+      
       {editingProvider && (
         <EditProviderModal
           provider={editingProvider}

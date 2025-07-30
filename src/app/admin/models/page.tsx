@@ -1,85 +1,70 @@
 'use client';
 
-import { Pencil, Trash } from 'lucide-react';
+import { Model } from '@/types/models';
+import { useState, useEffect } from 'react';
+import { getModel } from '@/service/model';
+import Header from './Header';
+import CreateModelModal from './CreateModelModal';
+import ModelTable from './ModelTable';
+import EditModelModal from './EditModelModal';
 
 export default function ModelsPage() {
-  const models = [
-    {
-      code: 'gpt-4',
-      name: 'GPT-4',
-      provider: 'OpenAI',
-      status: 'active',
-    },
-    {
-      code: 'gpt-3.5-turbo',
-      name: 'GPT-3.5 Turbo',
-      provider: 'OpenAI',
-      status: 'active',
-    },
-    {
-      code: 'claude-3-opus',
-      name: 'Claude 3 Opus',
-      provider: 'Anthropic',
-      status: 'inactive',
-    },
-  ];
+  const [models, setModels] = useState<Model[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [editingModel, setEditingModel] = useState<Model | null>(null);
+
+  useEffect(() => {
+    // Giả lập việc lấy dữ liệu từ API
+    const fetchModels = async () => {
+      setLoading(true);
+
+      const response = await getModel();
+      console.log(response);
+      setModels(response.data);
+      setLoading(false);
+    };
+
+    fetchModels();
+  }, []);
+
+  const handleAddModel = (newModel) => {
+    setModels((prev) => [...prev, newModel]);
+  };
+
+  const handelSave = (updatedModel: Model) => {
+    setModels(prev =>
+      prev.map(m => (m.id === updatedModel.id ? updatedModel : m))
+    );
+  }
+
+  const handleToggleStatus = (id: string, newStatus: boolean) => {
+    setModels(prevModels =>
+      prevModels.map(model =>
+        model.id === id ? { ...model, enabled: newStatus } : model
+      )
+    );
+  };
+
 
   return (
-    <div>
-      {/* Tiêu đề */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-black">Quản lý Models</h1>
-          <p className="text-gray-600">Quản lý các model AI</p>
-        </div>
-        <button className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
-          + Thêm Model
-        </button>
+    <div className="max-w-6xl mx-auto py-8">
+      <div className="flex items-center justify-between mb-8">
+        <Header />
+        <CreateModelModal onAdd={handleAddModel} />
       </div>
 
-      {/* Bảng danh sách models */}
-      <div className="bg-white rounded shadow p-6">
-        <h2 className="text-xl font-semibold mb-4 text-black">Danh sách Models</h2>
-        <table className="min-w-full table-auto border">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="px-4 py-2 text-black">Model Code</th>
-              <th className="px-4 py-2 text-black">Display Name</th>
-              <th className="px-4 py-2 text-black">Provider</th>
-              <th className="px-4 py-2 text-black">Trạng thái</th>
-              <th className="px-4 py-2 text-black">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {models.map((model, index) => (
-              <tr key={index} className="border-t">
-                <td className="px-4 py-2 text-black">{model.code}</td>
-                <td className="px-4 py-2 font-medium text-black">{model.name}</td>
-                <td className="px-4 py-2 text-black">{model.provider}</td>
-                <td className="px-4 py-2 text-black">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      model.status === 'active'
-                        ? 'bg-black text-white'
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    {model.status === 'active' ? 'Kích hoạt' : 'Tắt'}
-                  </span>
-                </td>
-                <td className="px-4 py-2 flex gap-2">
-                  <button className="p-2 rounded text-black">
-                    <Pencil size={16} />
-                  </button>
-                  <button className="p-2 rounded text-black">
-                    <Trash size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ModelTable
+        models={models}
+        onEditClick={(model) => setEditingModel(model)}
+        onToggleStatus={handleToggleStatus}
+      />
+      {editingModel && (
+        <EditModelModal
+          model={editingModel}
+          onClose={() => setEditingModel(null)}
+          onSave={handelSave}
+        />
+      )}
     </div>
   );
 }

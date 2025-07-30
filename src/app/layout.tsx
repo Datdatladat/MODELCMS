@@ -3,7 +3,7 @@ import '@/styles/globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Admin Panel',
+  title: 'TinaSoft ModelCMS',
   description: 'Trang quản trị hệ thống AI',
 };
 
