@@ -1,10 +1,13 @@
+import { ReactNode } from 'react';
+
 type AuthButtonProps = {
-  label: string;
+  label?: string;
+  children?: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
 };
 
-export default function AuthButton({ label, onClick, disabled }: AuthButtonProps) {
+export default function AuthButton({ label, children, onClick, disabled }: AuthButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -15,7 +18,7 @@ export default function AuthButton({ label, onClick, disabled }: AuthButtonProps
           : 'bg-gradient-to-r from-red-600 to-orange-500 text-white hover:from-red-700 hover:to-orange-600 hover:shadow-lg transform hover:scale-105'
       }`}
     >
-      {label}
+      {children ?? label}
     </button>
   );
 }

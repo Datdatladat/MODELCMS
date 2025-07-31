@@ -1,101 +1,139 @@
-// src/app/user/layout.tsx (Updated with guide link)
 'use client';
-
-import { Inter } from 'next/font/google';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { FiKey, FiDownload, FiHome, FiBook, FiLogOut } from 'react-icons/fi';
-
-const inter = Inter({ subsets: ['latin'] });
+import { FiMenu, FiX, FiLogOut, FiKey, FiDownload, FiBook, FiHome } from 'react-icons/fi';
 
 export default function UserLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
   const handleLogout = () => {
-    // Logic logout
-    router.push('/');
+    localStorage.removeItem('token');
+    window.location.href = '/';
   };
 
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path);
+  const navigation = [
+    { name: 'Trang Chủ', href: '/user', icon: FiHome },
+    { name: 'API Keys', href: '/user/access-keys', icon: FiKey },
+    { name: 'Tải Xuống', href: '/user/download', icon: FiDownload },
+    { name: 'Hướng Dẫn', href: '/user/guide', icon: FiBook },
+  ];
 
   return (
-    <html lang="en" className={inter.className}>
-      <body className="flex h-screen bg-gray-50">
-        {/* Sidebar cố định */}
-        <div className="w-72 bg-white border-r border-gray-200 flex flex-col fixed h-full">
-          <div className="p-6 border-b border-gray-200 flex items-center space-x-4">
-            <img src="/images/logoTina.jpg" alt="Tina Logo" className="w-10 h-10 rounded-full transition-transform transform hover:scale-110 hover:rotate-12" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent transition-all duration-500 hover:scale-110 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 cursor-pointer animate-pulse">
-              Tina Code
-            </h1>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Navigation */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link href="/user" className="flex items-center group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 rounded-full blur-md opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                <Image 
+                  src="/images/logoTina.jpg" 
+                  alt="TinaCode Logo" 
+                  width={40} 
+                  height={40} 
+                  className="relative rounded-full border-2 border-white shadow-lg group-hover:scale-110 transition-transform duration-300" 
+                />
+              </div>
+              <span className="ml-3 text-xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+                TinaCode
+              </span>
+            </Link>
 
-          <nav className="flex-1 p-4 space-y-2 mt-4">
-            <Link
-              href="/user"
-              className={`flex items-center px-5 py-4 rounded-xl text-lg transition-all duration-300 ${pathname === '/user'
-                ? 'bg-blue-50 text-blue-600 font-semibold shadow-md'
-                : 'text-gray-600 hover:bg-gray-100 hover:shadow-sm'
-                }`}
-            >
-              <FiHome className="mr-3 text-xl transition-transform transform hover:scale-110" />
-              Trang chủ
-            </Link>
-            <Link
-              href="/user/access-keys"
-              className={`flex items-center px-5 py-4 rounded-xl text-lg transition-all duration-300 ${isActive('/user/access-keys')
-                ? 'bg-blue-50 text-blue-600 font-semibold shadow-md'
-                : 'text-gray-600 hover:bg-gray-100 hover:shadow-sm'
-                }`}
-            >
-              <FiKey className="mr-3 text-xl transition-transform transform hover:scale-110" />
-              Tạo APiKey
-            </Link>
-            <Link
-              href="/user/download"
-              className={`flex items-center px-5 py-4 rounded-xl text-lg transition-all duration-300 ${isActive('/user/download')
-                ? 'bg-blue-50 text-blue-600 font-semibold shadow-md'
-                : 'text-gray-600 hover:bg-gray-100 hover:shadow-sm'
-                }`}
-            >
-              <FiDownload className="mr-3 text-xl transition-transform transform hover:scale-110" />
-              Tải xuống
-            </Link>
-            <Link
-              href="/user/guide"
-              className={`flex items-center px-5 py-4 rounded-xl text-lg transition-all duration-300 ${isActive('/user/guide')
-                ? 'bg-blue-50 text-blue-600 font-semibold shadow-md'
-                : 'text-gray-600 hover:bg-gray-100 hover:shadow-sm'
-                }`}
-            >
-              <FiBook className="mr-3 text-xl transition-transform transform hover:scale-110" />
-              Hướng dẫn sử dụng
-            </Link>
-          </nav>
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-1">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg'
+                        : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 mr-2" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
 
-          {/* Nút logout */}
-          <div className="p-4 border-t border-gray-200">
+            {/* Desktop Logout */}
+            <div className="hidden md:flex items-center">
+              <button
+                onClick={handleLogout}
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+              >
+                <FiLogOut className="w-4 h-4 mr-2" />
+                Đăng Xuất
+              </button>
+            </div>
+
+            {/* Mobile Menu Button */}
             <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center space-x-2 text-gray-600 hover:text-red-600 px-4 py-3 rounded-lg transition-colors duration-300 hover:shadow-md"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
             >
-              <FiLogOut className="text-xl transition-transform transform hover:scale-110" />
-              <span className="text-lg">Đăng xuất</span>
+              {isMobileMenuOpen ? (
+                <FiX className="w-6 h-6" />
+              ) : (
+                <FiMenu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* Nội dung chính cách sidebar */}
-        <div className="flex-1 ml-72 p-8">
-          {children}
-        </div>
-      </body>
-    </html>
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 bg-white">
+            <div className="px-4 py-2 space-y-1">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                        : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 mr-3" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full px-3 py-3 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+              >
+                <FiLogOut className="w-5 h-5 mr-3" />
+                Đăng Xuất
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {children}
+      </main>
+    </div>
   );
 }

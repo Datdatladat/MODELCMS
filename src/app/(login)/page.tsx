@@ -10,6 +10,7 @@ import { getUserRole } from '@/lib/auth';
 import Image from 'next/image';
 import { FiUser, FiShield, FiChevronDown } from 'react-icons/fi';
 
+
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -17,19 +18,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [authType, setAuthType] = useState<'TINA' | 'SYSTEM'>('TINA');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showError, setShowError] = useState(false);
 
   const handleLogin = async () => {
     try {
       setLoading(true);
+      setError(null);
+      setShowError(false);
       const res = await login(username, password, authType);
-      console.log('Login response:', res);
-
       // Lưu token nếu cần (localStorage, cookie,...)
       localStorage.setItem('accessToken', res.data.accessToken);
       localStorage.setItem('refreshToken', res.data.refreshToken);
-
       const role = getUserRole(res.data.accessToken);
-
       // Chuyển hướng dựa vào role
       if (role === 'ADMIN') {
         router.push('/admin');
@@ -37,7 +38,9 @@ export default function LoginPage() {
         router.push('/user');
       }
     } catch (err) {
-      alert('Đăng nhập thất bại. Vui lòng kiểm tra lại.');
+      setError('Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.');
+      setShowError(true);
+      setTimeout(() => setShowError(false), 4000);
     } finally {
       setLoading(false);
     }
@@ -45,8 +48,17 @@ export default function LoginPage() {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 px-4">
-      <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md space-y-8 border border-red-100 backdrop-blur-lg bg-opacity-95">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 px-4 relative">
+      {/* Top-right floating notification */}
+      {showError && error && (
+        <div className="fixed top-6 right-6 z-50 animate-fade-in-up">
+          <div className="flex items-center gap-2 px-5 py-3 rounded-xl shadow-2xl bg-gradient-to-r from-red-500 to-orange-400 text-white font-semibold border-2 border-white/30 min-w-[260px] max-w-xs">
+            <svg className="w-5 h-5 text-white animate-pulse" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.054 0 1.918-.816 1.995-1.85l.007-.15V6c0-1.054-.816-1.918-1.85-1.995L19 4H5c-1.054 0-1.918.816-1.995 1.85L3 6v12c0 1.054.816 1.918 1.85 1.995l.15.005z" /></svg>
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+      <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md space-y-8 border border-red-100 backdrop-blur-lg bg-opacity-95 relative">
         <div className="flex flex-col items-center space-y-4 mb-6">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-orange-400 rounded-full blur-lg opacity-30 animate-pulse"></div>
@@ -141,10 +153,19 @@ export default function LoginPage() {
           </div>
           <div className="pt-4">
             <AuthButton 
-              label={loading ? 'Đang xử lý...' : 'Đăng nhập'} 
               onClick={handleLogin} 
-              disabled={loading} 
-            />
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  Đang xử lý...
+                </span>
+              ) : 'Đăng nhập'}
+            </AuthButton>
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-400">

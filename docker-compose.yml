@@ -1,0 +1,13 @@
+services:
+  web:
+    image: registry.gitlab.com/ai-agent7302829/agent-code-fe:1.0.0
+    environment:
+        - TZ=Asia/Ho_Chi_Minh
+    ports:
+      - "3005:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
