@@ -2,7 +2,7 @@
 
 import { Model } from '@/types/models';
 import { useState, useEffect } from 'react';
-import { getModel } from '@/service/model';
+import { getModels } from '@/service/model';
 import Header from './Header';
 import CreateModelModal from './CreateModelModal';
 import ModelTable from './ModelTable';
@@ -18,7 +18,7 @@ export default function ModelsPage() {
     const fetchModels = async () => {
       setLoading(true);
 
-      const response = await getModel();
+      const response = await getModels();
       console.log(response);
       setModels(response.data);
       setLoading(false);

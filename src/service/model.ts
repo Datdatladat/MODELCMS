@@ -1,7 +1,7 @@
 import { Model, ModelCreateRequest, ModelUpdateInfoRequest, ModelResponse } from '@/types/models';
 import { api } from '@/lib/api';
 
-export const getModel = async () => {
+export const getModels = async () => {
   const token = localStorage.getItem('accessToken');
   const res = await api.get('/api/model', {
     headers: {

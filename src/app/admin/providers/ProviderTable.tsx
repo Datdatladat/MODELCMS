@@ -19,24 +19,17 @@ interface ProviderTableProps {
 }
 
 export default function ProviderTable({ providers, onEditClick }: ProviderTableProps) {
-  const [showFullKeys, setShowFullKeys] = useState<Record<string, boolean>>({});
+  const [showApiKey, setShowApiKey] = useState<{ [key: string]: boolean }>({});
 
-  const handleToggleShow = (id: string) => {
-    setShowFullKeys((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const toggleApiKeyVisibility = (id: string) => {
+    setShowApiKey(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleCopy = async (apiKey: string) => {
-    try {
-      await navigator.clipboard.writeText(apiKey);
-      alert('Đã copy API Key!');
-    } catch (err) {
-      console.error('Copy thất bại', err);
-      alert('Không thể copy API Key.');
-    }
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // Có thể thêm toast notification ở đây
   };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Danh sách Providers</h2>
@@ -56,14 +49,42 @@ export default function ProviderTable({ providers, onEditClick }: ProviderTableP
               providers.map((provider) => (
                 <tr key={provider.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-lg text-gray-800">{provider.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-lg text-gray-800 font-mono max-w-xs">
+                  <td className="px-6 py-4 whitespace-nowrap text-lg text-gray-800 font-mono">
+                    <div className="flex items-center space-x-2 max-w-[250px]">
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className="block truncate"
+                          title={provider.apiKey}
+                        >
+                          {showApiKey[provider.id] ? provider.apiKey : '••••••••••••••••'}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1 shrink-0">
+                        <button
+                          onClick={() => toggleApiKeyVisibility(provider.id)}
+                          className="text-gray-500 hover:text-gray-700 pr-2"
+                          title={showApiKey[provider.id] ? "Ẩn API key" : "Hiện API key"}
+                        >
+                          {showApiKey[provider.id] ? <FiEyeOff /> : <FiEye />}
+                        </button>
+                        <button
+                          onClick={() => copyToClipboard(provider.apiKey)}
+                          className="text-gray-500 hover:text-gray-700"
+                          title="Sao chép"
+                        >
+                          <FiCopy />
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-4 text-lg text-gray-800 max-w-[300px]">
                     <div className="flex items-center space-x-2">
-                      <span>
-                        {provider.apiKey}
+                      <span className="truncate" title={provider.baseUrl}>
+                        {provider.baseUrl}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-lg text-gray-800">{provider.baseUrl}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex space-x-2">
                       <button

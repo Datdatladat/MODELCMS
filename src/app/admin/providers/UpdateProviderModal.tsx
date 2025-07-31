@@ -58,7 +58,7 @@ export default function EditProviderModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-white/70 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-gray-900/40 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-800">Chỉnh sửa Provider</h2>

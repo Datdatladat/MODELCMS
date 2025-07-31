@@ -2,10 +2,39 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FiDatabase, FiSettings } from 'react-icons/fi';
+import { getModels } from '@/service/model';
+import { getProviders } from '@/service/provider';
+import { Model } from '@/types/models';
+import { Provider } from '@/types/providers';
 
 export default function AdminDashboard() {
-  const providerCount = 2; // dữ liệu giả
-  const modelCount = 3; // dữ liệu giả
+  const [loading, setLoading] = useState(true);
+  const [providers, setProviders] = useState<Provider[] | null>([]);
+  const [models, setModels] = useState<Model[] | null>([]);
+  const providerCount = 0// dữ liệu giả
+  const modelCount = 0; // dữ liệu giả
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [providerResponse, modelResponse] = await Promise.all([
+          getProviders(),
+          getModels(),
+        ]);
+        console.log('Providers:', providerResponse.data.content);
+        console.log('Models:', modelResponse.data);
+        setProviders(providerResponse.data.content);
+        setModels(modelResponse.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -26,7 +55,7 @@ export default function AdminDashboard() {
               <p className="text-gray-500">Quản lý các nhà cung cấp API</p>
             </div>
           </div>
-          <div className="text-4xl font-bold text-gray-800 mb-2">{providerCount}</div>
+          <div className="text-4xl font-bold text-gray-800 mb-2">{providers?.length || 0}</div>
           <p className="text-gray-500">Tổng số providers</p>
         </div>
 
@@ -41,7 +70,7 @@ export default function AdminDashboard() {
               <p className="text-gray-500">Quản lý các model AI</p>
             </div>
           </div>
-          <div className="text-4xl font-bold text-gray-800 mb-2">{modelCount}</div>
+          <div className="text-4xl font-bold text-gray-800 mb-2">{models?.length || 0}</div>
           <p className="text-gray-500">Tổng số models</p>
         </div>
       </div>

@@ -1,7 +1,11 @@
 // src/lib/api.ts
 import axios from 'axios';
+import { refreshToken } from '@/service/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const API_BASE_URL = 'http://localhost:8080';
 
 // Function to get access token from localStorage
 const getAccessToken = (): string | null => {
@@ -32,23 +36,73 @@ api.interceptors.request.use(
   }
 );
 
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error);     // Nếu có lỗi => reject toàn bộ
+    else prom.resolve(token);          // Nếu có token mới => retry lại toàn bộ
+  });
+  failedQueue = [];
+};
+
+
 // Add response interceptor to handle token expiration
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid, remove from localStorage
-      if (typeof window !== 'undefined') {
+  res => res,
+  async error => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (!localStorage.getItem('refreshToken')) {
+        // Không có refreshToken -> logout
         localStorage.removeItem('accessToken');
-        // Optionally redirect to login page
-        window.location.href = '/login';
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/';
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(token => {
+            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+            return api(originalRequest);
+          })
+          .catch(err => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newToken = await refreshToken(); // Gọi API refresh
+        localStorage.setItem('accessToken', newToken.data.accessToken);
+        localStorage.setItem('refreshToken', newToken.data.refreshToken);
+        processQueue(null, newToken.data.accessToken);
+        originalRequest.headers['Authorization'] = 'Bearer ' + newToken.data.accessToken;
+        return api(originalRequest);
+      } catch (err) {
+        // Nếu gọi refreshToken mà cũng bị lỗi (ví dụ: 401) → logout
+        console.error('Refresh token failed:', err);
+
+        processQueue(err, null);
+
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/';
+        }
+
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );
+
 
 // Utility functions for token management
 export const authUtils = {
@@ -80,33 +134,8 @@ export const authUtils = {
   logout: (): void => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       window.location.href = '/login';
     }
   }
 };
-
-export const fetchProvidersWithQuery = async ({
-  page,
-  pageSize,
-  keyword,
-}: {
-  page: number;
-  pageSize: number;
-  keyword: string;
-}) => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    pageSize: pageSize.toString(),
-    keyword,
-  });
-
-  const response = await api.post(`/provider?${params.toString()}`, null, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-  });
-
-  return response.data;
-};
-
-

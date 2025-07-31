@@ -68,7 +68,7 @@ export default function AddProviderButton({ onAdd }: AddProviderButtonProps) {
 
       {isModalOpen && (
         <div
-          className="fixed inset-0 bg-white/70 backdrop-blur-sm bg-opacity-30 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm bg-opacity-30 flex items-center justify-center z-50"
           onClick={closeModal}
         >
           <div
