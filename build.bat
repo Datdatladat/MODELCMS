@@ -5,7 +5,7 @@ set IMAGE_NAME=registry.gitlab.com/ai-agent7302829/agent-code-fe
 set IMAGE_TAG=1.0.0
 
 echo Building web ...
-@REM call npm run build
+call npm run build
 REM Build the Docker image
 echo Building Docker image %IMAGE_NAME%:%IMAGE_TAG%...
 call docker build -t %IMAGE_NAME%:%IMAGE_TAG% .

@@ -1,24 +1,31 @@
 // src/app/admin/layout.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiLogOut, FiSettings, FiDatabase, FiHome } from 'react-icons/fi';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import SimpleRouteGuard from '@/components/SimpleRouteGuard';
+import { logout } from '@/lib/simpleAuth';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
   const handleLogout = () => {
-    // Logic logout
-    router.push('/');
+    logout();
+    router.replace('/');
   };
 
-  const isActive = (path: string) => pathname.startsWith(path);
+  const isActive = (path: string, exact = false) => {
+    if (exact) {
+      return pathname === path;
+    }
+    return pathname.startsWith(path);
+  };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <SimpleRouteGuard>
+      <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar cố định */}
       <div className="w-72 bg-white border-r border-gray-200 flex flex-col fixed h-full">
         <div className="p-6 border-b border-gray-200 flex items-center justify-center space-x-4">
@@ -79,5 +86,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </main>
     </div>
+    </SimpleRouteGuard>
   );
 }

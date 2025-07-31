@@ -2,8 +2,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FiMenu, FiX, FiLogOut, FiKey, FiDownload, FiBook, FiHome } from 'react-icons/fi';
+import SimpleRouteGuard from '@/components/SimpleRouteGuard';
+import { logout } from '@/lib/simpleAuth';
 
 export default function UserLayout({
   children,
@@ -12,10 +14,11 @@ export default function UserLayout({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    window.location.href = '/';
+    logout();
+    router.replace('/');
   };
 
   const navigation = [
@@ -26,7 +29,8 @@ export default function UserLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <SimpleRouteGuard>
+      <div className="min-h-screen bg-gray-50">
       {/* Header Navigation */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,38 +54,36 @@ export default function UserLayout({
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg'
-                        : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </nav>
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg'
+                      : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
 
-            {/* Desktop Logout */}
-            <div className="hidden md:flex items-center">
-              <button
-                onClick={handleLogout}
-                className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
-              >
-                <FiLogOut className="w-4 h-4 mr-2" />
-                Đăng Xuất
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
+          {/* Desktop Logout */}
+          <div className="hidden md:flex items-center">
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+            >
+              <FiLogOut className="w-4 h-4 mr-2" />
+              Đăng Xuất
+            </button>
+          </div>            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-lg text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
@@ -135,5 +137,6 @@ export default function UserLayout({
         {children}
       </main>
     </div>
+    </SimpleRouteGuard>
   );
 }

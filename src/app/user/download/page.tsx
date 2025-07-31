@@ -1,8 +1,140 @@
 // app/download/page.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
 import { FaWindows, FaApple, FaLinux, FaDownload } from 'react-icons/fa';
-import { FiMonitor, FiCpu, FiHardDrive } from 'react-icons/fi';
+import { FiMonitor, FiCpu, FiHardDrive, FiLoader } from 'react-icons/fi';
+import { getVersions, type OSVersion, type Version } from '@/service/version';
 
 export default function DownloadPage() {
+  const [versions, setVersions] = useState<OSVersion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      try {
+        setLoading(true);
+        const response = await getVersions();
+        if (response.success) {
+          setVersions(response.data);
+        } else {
+          setError('Không thể tải danh sách phiên bản');
+        }
+      } catch (err) {
+        setError('Lỗi kết nối đến máy chủ');
+        console.error('Error fetching versions:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVersions();
+  }, []);
+
+  const getOSIcon = (os: string) => {
+    switch (os.toUpperCase()) {
+      case 'WINDOWS':
+        return FaWindows;
+      case 'MACOS':
+        return FaApple;
+      case 'LINUX':
+        return FaLinux;
+      default:
+        return FaDownload;
+    }
+  };
+
+  const getOSColors = (os: string) => {
+    switch (os.toUpperCase()) {
+      case 'WINDOWS':
+        return {
+          bg: 'from-blue-500 to-blue-600',
+          hover: 'hover:border-blue-200',
+          button: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+        };
+      case 'MACOS':
+        return {
+          bg: 'from-gray-700 to-gray-800',
+          hover: 'hover:border-gray-300',
+          button: 'from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900'
+        };
+      case 'LINUX':
+        return {
+          bg: 'from-orange-500 to-orange-600',
+          hover: 'hover:border-orange-200',
+          button: 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
+        };
+      default:
+        return {
+          bg: 'from-gray-500 to-gray-600',
+          hover: 'hover:border-gray-200',
+          button: 'from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
+        };
+    }
+  };
+
+  const getOSDisplayName = (os: string) => {
+    switch (os.toUpperCase()) {
+      case 'WINDOWS':
+        return 'Windows';
+      case 'MACOS':
+        return 'macOS';
+      case 'LINUX':
+        return 'Linux';
+      default:
+        return os;
+    }
+  };
+
+  const getOSSubtitle = (os: string) => {
+    switch (os.toUpperCase()) {
+      case 'WINDOWS':
+        return 'Windows 10/11';
+      case 'MACOS':
+        return 'Intel & Apple Silicon';
+      case 'LINUX':
+        return 'Ubuntu/Debian';
+      default:
+        return '';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="container mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-4">
+              <FiLoader className="animate-spin h-8 w-8 text-red-600 mr-2" />
+              <span className="text-lg font-medium text-gray-700">Đang tải danh sách phiên bản...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="container mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-6 max-w-md mx-auto">
+              <h2 className="text-lg font-semibold text-red-800 mb-2">Lỗi tải dữ liệu</h2>
+              <p className="text-red-600">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Thử lại
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto px-6 py-12">
@@ -18,109 +150,69 @@ export default function DownloadPage() {
 
         {/* Download Cards Grid */}
         <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mb-12">
-          {/* Windows Download Card */}
-          <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group">
-            <div className="flex items-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
-                <FaWindows className="text-white text-2xl" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">Windows</h2>
-                <p className="text-gray-500">Windows 10/11</p>
-              </div>
-            </div>
-            <div className="mb-6">
-              <p className="text-gray-600 mb-2">Phiên bản 2.1.0 (64-bit)</p>
-              <p className="text-sm text-gray-500">Tương thích với Windows 10 và 11</p>
-            </div>
-            <a 
-              href="/downloads/tinacode-windows-x64.exe" 
-              className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-4 rounded-2xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl group"
-              download
-            >
-              <FaDownload className="text-lg group-hover:scale-110 transition-transform duration-300" />
-              <span>Tải xuống cho Windows</span>
-            </a>
-          </div>
+          {versions.map((osData) => {
+            const IconComponent = getOSIcon(osData.os);
+            const colors = getOSColors(osData.os);
+            const displayName = getOSDisplayName(osData.os);
+            const subtitle = getOSSubtitle(osData.os);
 
-          {/* Mac Download Cards */}
-          <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-gray-300 group">
-            <div className="flex items-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
-                <FaApple className="text-white text-2xl" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">macOS</h2>
-                <p className="text-gray-500">Intel & Apple Silicon</p>
-              </div>
-            </div>
-            <div className="mb-6 space-y-3">
-              <div className="border border-gray-200 rounded-xl p-3">
-                <p className="font-medium text-gray-700">Apple Silicon (M1/M2/M3)</p>
-                <p className="text-sm text-gray-500">Phiên bản 2.1.0 - ARM64</p>
-                <a 
-                  href="/downloads/tinacode-macos-arm64.dmg" 
-                  className="mt-2 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium"
-                  download
-                >
-                  <FaDownload className="text-sm" />
-                  <span>Tải xuống ARM64</span>
-                </a>
-              </div>
-              <div className="border border-gray-200 rounded-xl p-3">
-                <p className="font-medium text-gray-700">Intel Chip</p>
-                <p className="text-sm text-gray-500">Phiên bản 2.1.0 - x64</p>
-                <a 
-                  href="/downloads/tinacode-macos-x64.dmg" 
-                  className="mt-2 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium"
-                  download
-                >
-                  <FaDownload className="text-sm" />
-                  <span>Tải xuống Intel</span>
-                </a>
-              </div>
-            </div>
-          </div>
+            return (
+              <div 
+                key={osData.os}
+                className={`bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 ${colors.hover} group`}
+              >
+                <div className="flex items-center mb-6">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${colors.bg} rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <IconComponent className="text-white text-2xl" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800">{displayName}</h2>
+                    <p className="text-gray-500">{subtitle}</p>
+                  </div>
+                </div>
 
-          {/* Linux Download Card */}
-          <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-orange-200 group">
-            <div className="flex items-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
-                <FaLinux className="text-white text-2xl" />
+                <div className="mb-6 space-y-3">
+                  {osData.versions.map((version, index) => (
+                    <div key={index} className="border border-gray-200 rounded-xl p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="font-medium text-gray-700">{version.osTypeDetail}</p>
+                          <p className="text-sm text-gray-500">Phiên bản {version.version}</p>
+                        </div>
+                      </div>
+                      <a 
+                        href={version.download_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-full flex items-center justify-center space-x-2 bg-gradient-to-r ${colors.button} text-white px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl group`}
+                      >
+                        <FaDownload className="text-sm group-hover:scale-110 transition-transform duration-300" />
+                        <span>Tải xuống {version.osTypeDetail}</span>
+                      </a>
+                    </div>
+                  ))}
+                </div>
+
+                {/* If no versions available */}
+                {osData.versions.length === 0 && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-500">Chưa có phiên bản nào khả dụng</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">Linux</h2>
-                <p className="text-gray-500">Ubuntu/Debian</p>
-              </div>
-            </div>
-            <div className="mb-6 space-y-3">
-              <div className="border border-gray-200 rounded-xl p-3">
-                <p className="font-medium text-gray-700">Debian/Ubuntu (.deb)</p>
-                <p className="text-sm text-gray-500">Phiên bản 2.1.0 - AMD64</p>
-                <a 
-                  href="/downloads/tinacode-linux-amd64.deb" 
-                  className="mt-2 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium"
-                  download
-                >
-                  <FaDownload className="text-sm" />
-                  <span>Tải xuống .deb</span>
-                </a>
-              </div>
-              <div className="border border-gray-200 rounded-xl p-3">
-                <p className="font-medium text-gray-700">AppImage (Universal)</p>
-                <p className="text-sm text-gray-500">Phiên bản 2.1.0 - Portable</p>
-                <a 
-                  href="/downloads/tinacode-linux.AppImage" 
-                  className="mt-2 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium"
-                  download
-                >
-                  <FaDownload className="text-sm" />
-                  <span>Tải xuống AppImage</span>
-                </a>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
+
+        {/* Show message if no versions available */}
+        {versions.length === 0 && (
+          <div className="text-center py-12">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 max-w-md mx-auto">
+              <h2 className="text-lg font-semibold text-yellow-800 mb-2">Chưa có phiên bản nào</h2>
+              <p className="text-yellow-600">Hiện tại chưa có phiên bản nào khả dụng để tải xuống.</p>
+            </div>
+          </div>
+        )}
 
         {/* System Requirements Section */}
         <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">

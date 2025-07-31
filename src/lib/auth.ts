@@ -27,3 +27,43 @@ export function getUserId(token: string): string | null {
   console.log('Decoded JWT payload:', payload);
   return payload?.userId || null; // hoặc payload?.userId tùy BE
 }
+
+export function isTokenExpired(token: string): boolean {
+  try {
+    const payload = parseJwt(token);
+    if (!payload || !payload.exp) return true;
+    
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp < currentTime;
+  } catch (e) {
+    return true;
+  }
+}
+
+export function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('accessToken');
+}
+
+export function getStoredRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('refreshToken');
+}
+
+export function isAuthenticated(): boolean {
+  const token = getStoredToken();
+  if (!token) return false;
+  return !isTokenExpired(token);
+}
+
+export function clearAuthTokens(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+}
+
+export function getCurrentUserRole(): string | null {
+  const token = getStoredToken();
+  if (!token || isTokenExpired(token)) return null;
+  return getUserRole(token);
+}

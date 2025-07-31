@@ -6,9 +6,10 @@ import AuthButton from '@/components/AuthButton';
 import TextInput from '@/components/TextInput';
 import { login } from '@/service/auth';
 import AuthHeader from '@/components/AuthHeader';
-import { getUserRole } from '@/lib/auth';
+import { getUserRoleFromToken, setTokens, setUserRole } from '@/lib/simpleAuth';
 import Image from 'next/image';
 import { FiUser, FiShield, FiChevronDown } from 'react-icons/fi';
+import SimpleRouteGuard from '@/components/SimpleRouteGuard';
 
 
 export default function LoginPage() {
@@ -27,15 +28,28 @@ export default function LoginPage() {
       setError(null);
       setShowError(false);
       const res = await login(username, password, authType);
-      // Lưu token nếu cần (localStorage, cookie,...)
-      localStorage.setItem('accessToken', res.data.accessToken);
-      localStorage.setItem('refreshToken', res.data.refreshToken);
-      const role = getUserRole(res.data.accessToken);
-      // Chuyển hướng dựa vào role
-      if (role === 'ADMIN') {
-        router.push('/admin');
+      
+      // Store tokens
+      setTokens(res.data.accessToken, res.data.refreshToken);
+      
+      // Get and store user role
+      const role = getUserRoleFromToken(res.data.accessToken);
+      if (role) {
+        setUserRole(role);
+        // Redirect based on role
+        if (role === 'ADMIN') {
+          router.push('/admin');
+        } else if (role === 'USER') {
+          router.push('/user');
+        } else {
+          setError('Vai trò người dùng không hợp lệ.');
+          setShowError(true);
+          setTimeout(() => setShowError(false), 4000);
+        }
       } else {
-        router.push('/user');
+        setError('Không thể xác định vai trò người dùng.');
+        setShowError(true);
+        setTimeout(() => setShowError(false), 4000);
       }
     } catch (err) {
       setError('Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.');
@@ -48,7 +62,8 @@ export default function LoginPage() {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 px-4 relative">
+    <SimpleRouteGuard>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-orange-50 to-yellow-100 px-4 relative">
       {/* Top-right floating notification */}
       {showError && error && (
         <div className="fixed top-6 right-6 z-50 animate-fade-in-up">
@@ -174,6 +189,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </SimpleRouteGuard>
   );
 }
