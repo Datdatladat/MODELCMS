@@ -2,11 +2,21 @@
 
 REM Set environment variables for Docker registry
 set IMAGE_NAME=registry.gitlab.com/ai-agent7302829/agent-code-fe
-set IMAGE_TAG=1.0.0
+set IMAGE_TAG=1.0.2
 
-echo Building web ...
+echo Cleaning previous build...
+if exist ".next" rmdir /s /q ".next"
+if exist "out" rmdir /s /q "out"
+
+echo Building Next.js application...
 call npm run build
-REM Build the Docker image
+
+REM Check if the Next.js build was successful
+IF %ERRORLEVEL% NEQ 0 (
+    echo Next.js build failed. Exiting...
+    exit /b %ERRORLEVEL%
+)
+
 echo Building Docker image %IMAGE_NAME%:%IMAGE_TAG%...
 call docker build -t %IMAGE_NAME%:%IMAGE_TAG% .
 

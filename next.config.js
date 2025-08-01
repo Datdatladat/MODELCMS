@@ -4,7 +4,12 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true
-  }
+  },
+  // Ensure proper client-side routing
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
+  // Remove exportPathMap to let Next.js handle routing dynamically
 };
 
 module.exports = nextConfig;
